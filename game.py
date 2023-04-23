@@ -1,13 +1,14 @@
-import random
+import random, math
 
 '''
 Determine the results of Ground Combat
 '''
 class GroundCombatResults():
 
-    def __init__(self, drm: int, odds: str):
+    def __init__(self, drm: int, attack:int, defence: int):
         self.drm = drm
-        self.odds = odds
+        self.attack = attack
+        self.defence = defence
         self.results = {
             'AE': ('Eliminated','NE','None'),
             'AH': ('Halved','NE','None'),
@@ -22,25 +23,28 @@ class GroundCombatResults():
             'DQ': ('NE','Quartered','Defender'),
             'DH': ('NE','Halved','Defender'),
             'DE': ('NE','Eliminated','Defender'),
-            'DA': ('NE','NE','None')
-        }      
+            'DA': ('NE','Annihilated','None')
+        }    
 
-    def calculate_combat_result(self):
+    def calculate_result(self):
         combat_results_code = ['AE','AH','AQ','HR','QR','HQ','DR','QH','EX','HX','DQ','DH','DE','DA']
-        combat_odds = ['1:4','1:3','1:2','1:1','2:1','3:1','4:1','5:1','6:1','7:1','8:1','9:1']
+        #combat_odds = ['1:4','1:3','1:2','1:1','2:1','3:1','4:1','5:1','6:1','7:1','8:1','9:1']
 
-        modded_roll = _dice(10) + self.drm
-        if modded_roll < -4: modded_roll = -4
-        if modded_roll > 15: modded_roll = 15
+        modded_roll = _dice(10) + self.drm + 4 # scaling to zero for the modded roll
+        if modded_roll < 0: modded_roll = 0
+        if modded_roll > 20: modded_roll = 20
 
-        combat_odds_index = combat_odds.index(self.odds)
-        offset = modded_roll - (3 - combat_odds_index)
+        self.combat_odds_index = _ratio(self.attack, self.defence) #= combat_odds.index(self.odds)
+        offset = modded_roll + self.combat_odds_index
+        result_index = offset - 7
+        if offset < 8: result_index = 0
+        if offset > 19 and offset < 28: result_index = 12
+        if offset > 27: result_index = 13
+        
+        return combat_results_code[result_index]
 
-        if offset < 0: offset = 0
-        return combat_results_code[offset]
-
-    def get_effects(self):
-        result = self.calculate_combat_result()
+    def get_results(self):
+        result = self.calculate_result()
         print(result)
         return self.results.get(result)
 
@@ -48,6 +52,30 @@ def _dice(n):
     random.seed()
     return random.randint(1,n)
 
+# Return the index of the list of odd
+def _ratio(a, d) -> int:
+    if a == d: return 3
+    r = _dice(10)
+    if a > d:
+        ret = 2+math.ceil(a/d) if r > 5 else 2+math.floor(a/d)
+        if ret > 8: ret = 8
+        return ret
+    if a < d:
+        ret = 3-math.ceil(d/a) if r > 5 else 3-math.floor(d/a)
+        if ret < 0: ret = 0
+        return ret
+        
+
+
 
 if __name__ == "__main__":
-    print(GroundCombatResults(-2, '5:1').get_effects())
+    random.seed()
+    for i in range(1,10):
+        drm = random.randint(-2,3)
+        attack = random.randint(1,25)
+        defence = random.randint(1,20)
+        odds = f'{attack}:{defence}'
+        print('========================')
+        print(f'Attack:Defence {odds} - drm: {drm}')
+        print(_ratio(attack, defence))
+        print(f'Results: {GroundCombatResults(drm, attack, defence).get_results()}')
