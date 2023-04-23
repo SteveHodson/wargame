@@ -1,5 +1,7 @@
 activate = . .venv/bin/activate
 
+.PHONY: tests
+
 .venv: .venv/touchfile
 
 .venv/touchfile: requirements.txt
@@ -7,8 +9,8 @@ activate = . .venv/bin/activate
 	$(activate); pip install -Ur requirements.txt
 	touch .venv/touchfile
 
-test:
-	@echo test
+tests:
+	$(activate); python3 -m pytest
 
 wargame:
 	@building wargame
