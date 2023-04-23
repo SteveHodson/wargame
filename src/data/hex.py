@@ -1,6 +1,4 @@
-from enum import Enum
-from tables.units import GroundUnitTypeAdditional
-from hex import TerrainType, CityType, FortificationType, HexsideType
+from tables.constants import TerrainType, CityType, FortificationType, HexsideType
 
 
 class Hex():
@@ -18,5 +16,5 @@ class Hex():
         self.fort_type = fort_type
 
     def get_terrain(self):
-        return self.terrain
+        return self.terrain_type
 

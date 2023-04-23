@@ -13,7 +13,7 @@ tests:
 	$(activate); python3 -m pytest
 
 wargame:
-	@echo TODO - building wargame
+	$(activate); python3 src/battle.py
 
 tag:
 	@git tag $(TAG)
